@@ -11,6 +11,7 @@ public class Parser implements AutoCloseable {
     private int arg2;
     private String command;
     private CommandType commandType;
+
     Parser(InputStream in) {
         this.bufferedReader = new BufferedReader(new InputStreamReader(in));
     }
@@ -21,8 +22,13 @@ public class Parser implements AutoCloseable {
 
     public void advance() throws IOException {
         while (this.hasMoreLines()) {
-            String currentLine = this.bufferedReader.readLine().trim();
-            if (!currentLine.startsWith("//") && !currentLine.isBlank()) { // is to be saved
+            String currentLine = this.bufferedReader.readLine();
+            if (currentLine.contains("//")) { // remove comments
+                currentLine = currentLine.substring(0, currentLine.indexOf("//"));
+            }
+            currentLine = currentLine.trim();
+
+            if (!currentLine.isBlank()) { // ignore empty lines (after removing comments)
                 String[] tokens = currentLine.split(" ");
                 this.command = tokens[0];
 
@@ -98,14 +104,6 @@ public class Parser implements AutoCloseable {
         C_FUNCTION,
         C_RETURN,
         C_CALL;
-
-        public boolean isArithmetic() {
-            return this == C_ARITHMETIC;
-        }
-
-        public boolean isPushPop() {
-            return this == C_PUSH || this == C_POP;
-        }
 
         public boolean hasArg2() {
             return this == C_PUSH || this == C_POP || this == C_FUNCTION || this == C_CALL;
