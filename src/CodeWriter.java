@@ -6,9 +6,6 @@ import java.util.StringJoiner;
 
 public class CodeWriter implements AutoCloseable {
 
-    private static final String R13 = "@R13";
-    private static final String R14 = "@R14";
-    private static final String R15 = "@R15";
     private static int AUTO_BRANCH_INDEX = 0;
     private final BufferedWriter bufferedWriter;
     private String fileName;
@@ -31,12 +28,8 @@ public class CodeWriter implements AutoCloseable {
      */
     public void writeArithmetic(String command) throws IOException {
         switch (command) {
-            case "add", "sub", "eq", "gt", "lt", "and", "or" -> {
-                writeStackPop2();
-            }
-            case "neg", "not" -> {
-                writeStackPop(true);
-            }
+            case "add", "sub", "eq", "gt", "lt", "and", "or" -> writeStackPop2();
+            case "neg", "not" -> writeStackPop(true);
             default -> throw new IllegalStateException("Unexpected value: " + command);
         }
 
@@ -60,7 +53,7 @@ public class CodeWriter implements AutoCloseable {
         this.writeStackPush();
     }
 
-    private String createEqualityCommands(EqualityType equalityType) throws IOException {
+    private String createEqualityCommands(EqualityType equalityType) {
         String eqLabel = createAutoLabel("EQ");
         String afterLabel = createAutoLabel("AFTER_EQ");
         StringJoiner joiner = new StringJoiner("\n");
@@ -77,7 +70,7 @@ public class CodeWriter implements AutoCloseable {
                 .toString();
     }
 
-    private String createAutoLabel(String label) throws IOException {
+    private String createAutoLabel(String label) {
         return label + "." + AUTO_BRANCH_INDEX++;
     }
 
@@ -107,6 +100,7 @@ public class CodeWriter implements AutoCloseable {
     }
 
     // pops 1 off the stack. Will store in D if storeInD is true. It will always be stored in M
+    @SuppressWarnings("SameParameterValue")
     private void writeStackPop(String where, boolean storeInD) throws IOException {
         this.write(
                 where,
